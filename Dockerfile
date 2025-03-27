@@ -29,7 +29,7 @@ RUN pip3 install --no-cache-dir \
     pytest \
     black \
     flake8 \
-    streamlit \
+    streamlit
     # Add your common Python packages here
 
 # You can add other language-specific tools as needed
