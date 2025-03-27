@@ -42,8 +42,8 @@ RUN pip3 install --no-cache-dir \
 WORKDIR /app
 
 # Add any scripts or configurations you want available in the image
-COPY scripts/entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/entrypoint.sh
+#COPY scripts/entrypoint.sh /usr/local/bin/
+#RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Default command
-CMD ["/bin/bash"]
+#CMD ["/bin/bash"]
