@@ -1,7 +1,9 @@
 name: Automated Docker Base Image Build
 
+# Add permissions at the workflow level
 permissions:
-  contents: write  # This gives permission to create tags and push
+  contents: write  # Needed for pushing tags
+  packages: write  # Needed for pushing to container registry
 
 on:
   # Run on the 1st day of every month at 2:00 AM UTC
@@ -27,13 +29,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Need full history for tag creation
-          token: ${{ secrets.GH_PAT }}
+          fetch-depth: 0  # Need full history for tag creation
+          token: ${{ github.token }}  # Use the built-in token
       
       - name: Configure Git
         run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       
       - name: Generate version tag
         id: generate_tag
@@ -86,8 +88,6 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
-          # Uncomment for multi-platform support if needed
-          # platforms: linux/amd64,linux/arm64
       
       - name: Scan for vulnerabilities
         uses: aquasecurity/trivy-action@master
@@ -102,8 +102,7 @@ jobs:
         run: |
           chmod +x ./tests/verify-tools.sh
           ./tests/verify-tools.sh ${{ vars.DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
-        # Add specific error handling if needed
-        
+      
       - name: Create and push Git tag
         run: |
           TAG="${{ steps.generate_tag.outputs.tag }}"
@@ -122,10 +121,7 @@ jobs:
           
           git tag -a "$TAG" -m "Release $TAG - $TRIGGER_TYPE"
           
-          # Use GITHUB_TOKEN for authentication
-          git remote set-url origin https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git
-          
-          # Push using the built-in token
+          # Push the tag using the built-in token
           git push origin "$TAG"
           
           echo "Created and pushed tag: $TAG"
@@ -141,20 +137,6 @@ jobs:
           else
             git add README.md
             git commit -m "Update README with latest version: ${{ steps.generate_tag.outputs.tag }}"
-            git push
+            git push origin
           fi
         continue-on-error: true
-        
-      - name: Notify on completion
-        if: always()
-        run: |
-          STATUS="${{ job.status }}"
-          TAG="${{ steps.generate_tag.outputs.tag }}"
-          
-          if [[ "${{ job.status }}" == "success" ]]; then
-            echo "Build and push completed successfully for version $TAG"
-            # Add notification logic here if desired (Slack, Teams, etc.)
-          else
-            echo "Build failed for version $TAG"
-            # Add failure notification logic here if desired
-          fi
