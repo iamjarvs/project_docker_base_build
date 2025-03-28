@@ -76,8 +76,8 @@ jobs:
           context: .
           push: true
           tags: |
-            yourusername/base-dev-image:latest
-            yourusername/base-dev-image:${{ steps.generate_tag.outputs.tag }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/base-dev-image:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
@@ -105,7 +105,7 @@ jobs:
       - name: Run verification tests
         run: |
           chmod +x ./tests/verify-tools.sh
-          ./tests/verify-tools.sh yourusername/base-dev-image:${{ steps.generate_tag.outputs.tag }}
+          ./tests/verify-tools.sh ${{ secrets.DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
           
       - name: Update README with latest version
         run: |
