@@ -67,7 +67,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: ${{ variables.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          password: ${{ DOCKERHUB_TOKEN }}
       
       - name: Build and push
         id: docker_build
@@ -76,8 +76,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ variables.DOCKERHUB_USERNAME }}/base-dev-image:latest
-            ${{ variables.DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
+            ${{ DOCKERHUB_USERNAME }}/base-dev-image:latest
+            ${{ DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
@@ -105,7 +105,7 @@ jobs:
       - name: Run verification tests
         run: |
           chmod +x ./tests/verify-tools.sh
-          ./tests/verify-tools.sh ${{ variables.DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
+          ./tests/verify-tools.sh ${{ DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
           
       - name: Update README with latest version
         run: |
