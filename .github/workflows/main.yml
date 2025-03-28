@@ -80,7 +80,26 @@ jobs:
             ${{ vars.DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          build-args: |
+            BUILDKIT_INLINE_CACHE=1
+          # Uncomment for multi-platform support if needed
+          # platforms: linux/amd64,linux/arm64
       
+      - name: Scan for vulnerabilities
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ vars.DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
+          format: 'table'
+          exit-code: '0'  # Don't fail the build, just report
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+      
+      - name: Run verification tests
+        run: |
+          chmod +x ./tests/verify-tools.sh
+          ./tests/verify-tools.sh ${{ vars.DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
+        # Add specific error handling if needed
+        
       - name: Create and push Git tag
         run: |
           TAG="${{ steps.generate_tag.outputs.tag }}"
@@ -102,14 +121,9 @@ jobs:
           
           echo "Created and pushed tag: $TAG"
       
-      - name: Run verification tests
-        run: |
-          chmod +x ./tests/verify-tools.sh
-          ./tests/verify-tools.sh ${{ vars.DOCKERHUB_USERNAME }}/base-dev-image:${{ steps.generate_tag.outputs.tag }}
-          
       - name: Update README with latest version
         run: |
-          # Optional: Update README.md with the latest version information
+          # Update README.md with the latest version information
           sed -i "s/Latest version: .*/Latest version: ${{ steps.generate_tag.outputs.tag }}/" README.md || true
           
           # Check if there are changes to commit
@@ -121,3 +135,17 @@ jobs:
             git push
           fi
         continue-on-error: true
+        
+      - name: Notify on completion
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          TAG="${{ steps.generate_tag.outputs.tag }}"
+          
+          if [[ "${{ job.status }}" == "success" ]]; then
+            echo "Build and push completed successfully for version $TAG"
+            # Add notification logic here if desired (Slack, Teams, etc.)
+          else
+            echo "Build failed for version $TAG"
+            # Add failure notification logic here if desired
+          fi
