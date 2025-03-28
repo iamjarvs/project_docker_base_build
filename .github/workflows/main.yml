@@ -1,5 +1,8 @@
 name: Automated Docker Base Image Build
 
+permissions:
+  contents: write  # This gives permission to create tags and push
+
 on:
   # Run on the 1st day of every month at 2:00 AM UTC
   schedule:
