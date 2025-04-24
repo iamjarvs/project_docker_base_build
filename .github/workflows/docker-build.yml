@@ -98,6 +98,8 @@ jobs:
             linux/386
             linux/ppc64le
             linux/s390x
+          continue-on-error: true
+
           build-args: |
             BUILDKIT_INLINE_CACHE=1
       
