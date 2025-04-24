@@ -69,7 +69,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
-          platforms: 'arm64,amd64'
+          platforms: 'arm64,arm,amd64,386,ppc64le,s390x'
       
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -94,6 +94,11 @@ jobs:
           platforms: |
             linux/amd64
             linux/arm64
+            linux/arm/v7
+            linux/arm/v6
+            linux/386
+            linux/ppc64le
+            linux/s390x
           build-args: |
             BUILDKIT_INLINE_CACHE=1
       
